@@ -36,5 +36,5 @@ int main(int argc, char *argv[]) {
     auto generator = new GeneratorActionG4();
     run_manager_g4_->SetUserAction(generator);
 
-    run_manager_g4_->BeamOn(10);
+    run_manager_g4_->BeamOn(100000);
 }
