@@ -30,8 +30,10 @@ int main() {
     // Initialize the full run manager to ensure correct state flags
     run_manager_g4_->Initialize();
 
-    // Run the event loop:
-    run_manager_g4_->BeamOn(100000);
+    // Run our own event loop:
+    for(int i = 0; i < 100000; i++) {
+        run_manager_g4_->BeamOn(1);
+    }
 
     return 0;
 }
