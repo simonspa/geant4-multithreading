@@ -1,3 +1,6 @@
+#include <memory>
+#include <vector>
+
 #include <G4VUserDetectorConstruction.hh>
 #include <G4PVPlacement.hh>
 #include <G4LogicalVolume.hh>
