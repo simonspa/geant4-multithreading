@@ -29,12 +29,15 @@ ELSEIF(CMAKE_BUILD_TYPE MATCHES RELEASE)
     SET(CMAKE_CXX_FLAGS "${Geant4_CXX_FLAGS_RELEASE} ${CMAKE_CXX_FLAGS}")
 ENDIF()
 
-# Create executable and link the libs
+# Create executables
 ADD_EXECUTABLE(g4-test-nomt main_nomt.cpp)
 TARGET_INCLUDE_DIRECTORIES(g4-test-nomt SYSTEM PRIVATE ${Geant4_INCLUDE_DIRS})
 TARGET_LINK_LIBRARIES(g4-test-nomt ${Geant4_LIBRARIES})
 
-# Create executable and link the libs
 ADD_EXECUTABLE(g4-test-g4mt main_g4mt.cpp)
 TARGET_INCLUDE_DIRECTORIES(g4-test-g4mt SYSTEM PRIVATE ${Geant4_INCLUDE_DIRS})
 TARGET_LINK_LIBRARIES(g4-test-g4mt ${Geant4_LIBRARIES} Threads::Threads)
+
+ADD_EXECUTABLE(g4-test-ownmt main_ownmt.cpp)
+TARGET_INCLUDE_DIRECTORIES(g4-test-ownmt SYSTEM PRIVATE ${Geant4_INCLUDE_DIRS})
+TARGET_LINK_LIBRARIES(g4-test-ownmt ${Geant4_LIBRARIES} Threads::Threads)
