@@ -3,7 +3,6 @@
 
 #include "geometry.hpp"
 #include "generator.hpp"
-#include "sensitive.hpp"
 
 #include <G4RunManager.hh>
 #include <G4StepLimiterPhysics.hh>
@@ -36,10 +35,6 @@ int main(int argc, char *argv[]) {
     // Particle source
     auto generator = new GeneratorActionG4();
     run_manager_g4_->SetUserAction(generator);
-
-    // Sensitive device
-    auto sensitive_detector_action = new SensitiveDetectorActionG4();
-    geometry_construction->sensor_log_->SetSensitiveDetector(sensitive_detector_action);
 
     run_manager_g4_->BeamOn(10);
 }

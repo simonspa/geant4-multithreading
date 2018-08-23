@@ -1,6 +1,8 @@
 #include <memory>
 #include <vector>
 
+#include "sensitive.hpp"
+
 #include <G4VUserDetectorConstruction.hh>
 #include <G4PVPlacement.hh>
 #include <G4LogicalVolume.hh>
@@ -47,6 +49,13 @@ public:
 
         return world_phys_.get();
     };
+
+    void ConstructSDandField() override {
+        // Sensitive device
+        auto sensitive_detector_action = new SensitiveDetectorActionG4();
+        SetSensitiveDetector(sensor_log_, sensitive_detector_action);
+    };
+
     G4LogicalVolume * sensor_log_;
 
 private:
