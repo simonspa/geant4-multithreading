@@ -8,12 +8,7 @@
 #include <G4StepLimiterPhysics.hh>
 #include <G4PhysListFactory.hh>
 
-int main(int argc, char *argv[]) {
-    // How many threads do we use?
-    std::vector<std::string> args{argv + 1, argv + argc};
-    int threads_num = args.size() > 0 ? std::stoi(args[0]) : 1;
-    std::cout << "Using " << threads_num << " thread(s).\n";
-
+int main() {
     // Create the G4 run manager
     std::unique_ptr<G4RunManager> run_manager_g4_ = std::make_unique<G4RunManager>();
 
