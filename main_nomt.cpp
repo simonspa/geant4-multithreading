@@ -29,12 +29,11 @@ int main(int argc, char *argv[]) {
     run_manager_g4_->SetUserInitialization(physicsList);
     run_manager_g4_->InitializePhysics();
 
+    // Particle source
+    run_manager_g4_->SetUserInitialization(new GeneratorActionInitialization());
+
     // Initialize the full run manager to ensure correct state flags
     run_manager_g4_->Initialize();
-
-    // Particle source
-    auto generator = new GeneratorActionG4();
-    run_manager_g4_->SetUserAction(generator);
 
     run_manager_g4_->BeamOn(100000);
 }
