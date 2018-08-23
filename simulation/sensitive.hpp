@@ -8,9 +8,6 @@ class SensitiveDetectorActionG4 : public G4VSensitiveDetector {
 public:
     /**
      * @brief Constructs the action handling for every sensitive detector
-     * @param detector Detector this sensitive device is bound to
-     * @param msg Pointer to the messenger to send the charge deposits
-     * @param charge_creation_energy Energy needed per deposited charge
      */
     SensitiveDetectorActionG4() : G4VSensitiveDetector("SensitiveDetector") {
         // Add the sensor to the internal sensitive detector manager
