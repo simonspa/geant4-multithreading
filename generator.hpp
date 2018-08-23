@@ -1,6 +1,7 @@
 #include <G4Event.hh>
 #include <G4GeneralParticleSource.hh>
 #include <G4VUserPrimaryGeneratorAction.hh>
+#include <G4VUserActionInitialization.hh>
 #include <G4ParticleTable.hh>
 
 /**
@@ -36,4 +37,14 @@ public:
 
 private:
     std::unique_ptr<G4GeneralParticleSource> particle_source_;
+};
+
+class GeneratorActionInitialization : public G4VUserActionInitialization {
+public:
+    explicit GeneratorActionInitialization() = default;
+
+    void Build() const override {
+        SetUserAction(new GeneratorActionG4());
+    };
+
 };
