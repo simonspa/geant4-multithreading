@@ -1,8 +1,8 @@
 #include <string>
 #include <iostream>
 
-#include "geometry.hpp"
-#include "generator.hpp"
+#include "simulation/geometry.hpp"
+#include "simulation/generator.hpp"
 
 #include <G4MTRunManager.hh>
 #include <G4StepLimiterPhysics.hh>
@@ -36,5 +36,8 @@ int main(int argc, char *argv[]) {
     // Initialize the full run manager to ensure correct state flags
     run_manager_g4_->Initialize();
 
+    // Execute the event loop:
     run_manager_g4_->BeamOn(100000);
+
+    return 0;
 }

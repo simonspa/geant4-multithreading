@@ -5,9 +5,9 @@
 #include <string>
 #include <iostream>
 
-#include "geometry.hpp"
-#include "generator.hpp"
-#include "ThreadPool.hpp"
+#include "simulation/geometry.hpp"
+#include "simulation/generator.hpp"
+#include "tools/ThreadPool.hpp"
 
 #include <G4RunManager.hh>
 #include <G4StepLimiterPhysics.hh>
