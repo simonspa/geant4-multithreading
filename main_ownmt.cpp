@@ -9,8 +9,8 @@
 #include "simulation/generator.hpp"
 #include "tools/ThreadPool.hpp"
 
-#include "MyRunManager.hpp"
-#include "MyWorkerRunManager.hpp"
+// #include "MyRunManager.hpp"
+// #include "MyWorkerRunManager.hpp"
 
 #include <G4StepLimiterPhysics.hh>
 #include <G4PhysListFactory.hh>
@@ -20,6 +20,26 @@
 #include <G4UImanager.hh>
 #include <G4MTRunManagerKernel.hh>
 
+#include "Module.hpp"
+#include "SimpleMasterRunManager.hpp"
+
+// class MyThreadInitialization : public G4UserWorkerThreadInitialization {
+// public:
+//     MyThreadInitialization() = default;
+//     virtual ~MyThreadInitialization() = default;
+
+//     virtual G4Thread* CreateAndStartWorker(G4WorkerThread* workerThreadContext) override {
+//         return nullptr;
+//     }
+
+//     virtual void JoinWorker(G4Thread* aThread) override {
+//     }
+    
+//     virtual MyWorkerRunManager* CreateWorkerRunManager() const {
+//         return new MyWorkerRunManager;
+//     }
+// };
+/*
 class Module {
     public:
         Module(MyRunManager* rm) : run_manager_(rm) {
@@ -117,9 +137,6 @@ class Module {
                 { run_manager_->GetNonConstUserActionInitialization()->Build(); }
                 if(run_manager_->GetUserWorkerInitialization())
                 { run_manager_->GetUserWorkerInitialization()->WorkerStart(); }
-
-                // FIXME: This cases a sigfault while initializing the geometry
-                // Looks like some initialization is missing!
                 worker_run_manager_->Initialize();
 
                 init2 = true;
@@ -135,7 +152,7 @@ class Module {
         }
     private:
         MyRunManager* run_manager_;
-};
+};*/
 
 int main(int argc, char *argv[]) {
     // How many threads do we use?
@@ -146,7 +163,8 @@ int main(int argc, char *argv[]) {
     // Start new thread pool and create module object:
     ThreadPool pool(threads_num);
 
-    MyRunManager* run_manager_ = new MyRunManager;
+    //MyRunManager* run_manager_ = new MyRunManager;
+    SimpleMasterRunManager* run_manager_ = new SimpleMasterRunManager;
     // Set custom thread initialization
     // run_manager_->SetUserInitialization(new MyThreadInitialization);
 
@@ -168,13 +186,13 @@ int main(int argc, char *argv[]) {
     // Initialize the full run manager to ensure correct state flags
     run_manager_->Initialize();
 
-    auto module = std::make_unique<Module>(run_manager_);
+    auto module = std::make_unique<Module>(/*run_manager_*/);
     module->init();
 
     std::vector<std::future<bool>> module_futures;
 
     // The event loop:
-    for (int i = 0; i < 10000; i++) {
+    for (int i = 0; i < 5; i++) {
         // Define module execution:
         auto execute_module = [module = module.get(), event_num = i + 1]() {
             return module->run(event_num);
