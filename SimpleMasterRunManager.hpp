@@ -11,12 +11,7 @@ public:
     //
     virtual ~SimpleMasterRunManager();
     virtual void RunTermination();
-   // void SetTaskList( tbb::task_list* tl ) { theTasks = tl; }
-    //Set a reference to the output task list where new tasks will
-    //be added to
-   // void SetNumberEventsPerTask( G4int nt ) { nEvtsPerTask = nt; }
-    //Specify number of events that each simulation task is responsible
-    //for
+
 protected:
     virtual void CreateAndStartWorkers();
     virtual void TerminateWorkers();
@@ -33,6 +28,4 @@ protected:
       { return WorkerActionRequest::UNDEFINED; }
     virtual void NewActionRequest( WorkerActionRequest /*newRequest*/ ) {}
 private:
-    //tbb::task_list* theTasks;
-    //G4int nEvtsPerTask;
 };

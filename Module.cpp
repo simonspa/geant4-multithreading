@@ -26,7 +26,7 @@ Module::Module()
 void Module::init(){}
 bool Module::run(int e)
 {
-    G4int m_nEvents = 50;
+    G4int m_nEvents = 1;
   // In tbb we do not have anymore the concept of thread:
   // tasks run "somewhere"; but there is no control over where.
   // This somewhere is a thread, created, controlled and 'switched'

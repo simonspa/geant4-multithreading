@@ -8,4 +8,5 @@ public:
     virtual ~SimpleWorkerRunManager();
     virtual void ConstructScoringWorlds();
     virtual void MergePartialResults();
+    virtual G4Event* GenerateEvent(G4int i_event);
 };
