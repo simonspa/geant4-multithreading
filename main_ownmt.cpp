@@ -19,9 +19,15 @@
 #include <G4WorkerThread.hh>
 #include <G4UImanager.hh>
 #include <G4MTRunManagerKernel.hh>
+#include <G4VUserPrimaryGeneratorAction.hh>
+#include <G4VUserPhysicsList.hh>
+#include <G4VUserDetectorConstruction.hh>
+#include <G4VUserActionInitialization.hh>
 
-#include "Module.hpp"
-#include "SimpleMasterRunManager.hpp"
+//#include "Module.hpp"
+//#include "SimpleMasterRunManager.hpp"
+
+#include "CMSRunManager.hpp"
 
 // class MyThreadInitialization : public G4UserWorkerThreadInitialization {
 // public:
@@ -154,6 +160,23 @@ class Module {
         MyRunManager* run_manager_;
 };*/
 
+class Module {
+    public:
+        Module(CMSRunManager* rm) : run_manager_(rm) {
+        }
+
+        // Init to be called from main thread
+        void init() {
+        };
+
+        bool run(int evt_nr) const {
+            run_manager_->BeamOn(evt_nr);
+            return true;
+        }
+    private:
+        CMSRunManager* run_manager_;
+};
+
 int main(int argc, char *argv[]) {
     // How many threads do we use?
     std::vector<std::string> args{argv + 1, argv + argc};
@@ -164,7 +187,8 @@ int main(int argc, char *argv[]) {
     ThreadPool pool(threads_num);
 
     //MyRunManager* run_manager_ = new MyRunManager;
-    SimpleMasterRunManager* run_manager_ = new SimpleMasterRunManager;
+//    SimpleMasterRunManager* run_manager_ = new SimpleMasterRunManager;
+    CMSRunManager* run_manager_ = new CMSRunManager;
     // Set custom thread initialization
     // run_manager_->SetUserInitialization(new MyThreadInitialization);
 
@@ -181,12 +205,13 @@ int main(int argc, char *argv[]) {
     run_manager_->InitializePhysics();
 
     // Particle source
-    run_manager_->SetUserInitialization(new GeneratorActionInitialization());
+    //run_manager_->SetUserInitialization(new GeneratorActionInitialization());
+    run_manager_->SetUserAction(new GeneratorActionG4());
 
     // Initialize the full run manager to ensure correct state flags
     run_manager_->Initialize();
 
-    auto module = std::make_unique<Module>(/*run_manager_*/);
+    auto module = std::make_unique<Module>(run_manager_);
     module->init();
 
     std::vector<std::future<bool>> module_futures;
