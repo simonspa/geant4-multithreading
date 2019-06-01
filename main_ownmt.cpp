@@ -24,10 +24,10 @@
 #include <G4VUserDetectorConstruction.hh>
 #include <G4VUserActionInitialization.hh>
 
-//#include "Module.hpp"
-//#include "SimpleMasterRunManager.hpp"
+#include "Module.hpp"
+#include "SimpleMasterRunManager.hpp"
 
-#include "CMSRunManager.hpp"
+//#include "CMSRunManager.hpp"
 
 // class MyThreadInitialization : public G4UserWorkerThreadInitialization {
 // public:
@@ -158,7 +158,7 @@ class Module {
         }
     private:
         MyRunManager* run_manager_;
-};*/
+};
 
 class Module {
     public:
@@ -175,7 +175,7 @@ class Module {
         }
     private:
         CMSRunManager* run_manager_;
-};
+};*/
 
 int main(int argc, char *argv[]) {
     // How many threads do we use?
@@ -187,8 +187,8 @@ int main(int argc, char *argv[]) {
     ThreadPool pool(threads_num);
 
     //MyRunManager* run_manager_ = new MyRunManager;
-//    SimpleMasterRunManager* run_manager_ = new SimpleMasterRunManager;
-    CMSRunManager* run_manager_ = new CMSRunManager;
+    SimpleMasterRunManager* run_manager_ = new SimpleMasterRunManager;
+    // CMSRunManager* run_manager_ = new CMSRunManager;
     // Set custom thread initialization
     // run_manager_->SetUserInitialization(new MyThreadInitialization);
 
@@ -205,8 +205,8 @@ int main(int argc, char *argv[]) {
     run_manager_->InitializePhysics();
 
     // Particle source
-    //run_manager_->SetUserInitialization(new GeneratorActionInitialization());
-    run_manager_->SetUserAction(new GeneratorActionG4());
+    run_manager_->SetUserInitialization(new GeneratorActionInitialization());
+    // run_manager_->SetUserAction(new GeneratorActionG4());
 
     // Initialize the full run manager to ensure correct state flags
     run_manager_->Initialize();

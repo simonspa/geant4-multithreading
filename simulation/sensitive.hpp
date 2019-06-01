@@ -13,6 +13,8 @@ public:
         // Add the sensor to the internal sensitive detector manager
         G4SDManager* sd_man_g4 = G4SDManager::GetSDMpointer();
         sd_man_g4->AddNewDetector(this);
+
+        std::cerr<< "SensitiveDetectorActionG4" << std::endl;
     };
 
     /**
