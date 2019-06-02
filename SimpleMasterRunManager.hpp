@@ -23,7 +23,7 @@ public:
     // Wrapper around BeamOn. It doesn't actually call BeamOn of this manager
     // but rather of the thread specific manager managed internall by this 
     // object.
-    void Run(G4int n_event);
+    void Run(G4int i_event, G4int n_event);
 
     // Must be called by each custom thread that ever called the Run method
     // to clean thread local stuff

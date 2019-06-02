@@ -80,7 +80,7 @@ G4Event* SimpleWorkerRunManager::GenerateEvent(G4int i_event)
     (void)i_event;
     if(!userPrimaryGeneratorAction)
     {
-        G4Exception("G4RunManager::GenerateEvent()", "Run0032", FatalException,
+        G4Exception("SimpleWorkerRunManager::GenerateEvent()", "Run0032", FatalException,
                 "G4VUserPrimaryGeneratorAction is not defined!");
         return 0;
     }
@@ -93,8 +93,15 @@ G4Event* SimpleWorkerRunManager::GenerateEvent(G4int i_event)
         anEvent  = new G4Event(numberOfEventProcessed);
         
         // must ask master to seed the event to ensure event reproducability.
-        eventLoopOnGoing = G4MTRunManager::GetMasterRunManager()
-                       ->SetUpAnEvent(anEvent,s1,s2,s3,true);
+        //eventLoopOnGoing = G4MTRunManager::GetMasterRunManager()
+        //               ->SetUpAnEvent(anEvent,s1,s2,s3,true);
+
+        s1 = seedsQueue.front(); seedsQueue.pop();
+        s2 = seedsQueue.front(); seedsQueue.pop();
+        if (seedsQueue.size() > 0) {
+            G4Exception("SimpleWorkerRunManager::GenerateEvent()", "Run0032", FatalException,
+            "SeedsQueue should be empty!");
+        }
 
         // seed RNG for this event run
         long seeds[3] = { s1, s2, 0 };
@@ -114,6 +121,40 @@ G4Event* SimpleWorkerRunManager::GenerateEvent(G4int i_event)
     }
 
   return anEvent;
+}
+
+void SimpleWorkerRunManager::DoEventLoop(G4int n_event,const char* macroFile,G4int n_select)
+{
+    if(!userPrimaryGeneratorAction)
+    {
+      G4Exception("SimpleWorkerRunManager::GenerateEvent()", "Run0032", FatalException,
+                "G4VUserPrimaryGeneratorAction is not defined!");
+    }
+
+    //This is the same as in the sequential case, just the for-loop indexes are
+    //different
+    InitializeEventLoop(n_event,macroFile,n_select);
+
+    runIsSeeded = true; 
+
+    // Event loop
+    eventLoopOnGoing = true;
+    G4int i_event = -1;
+    nevModulo = -1;
+    currEvID = -1;
+
+    while(eventLoopOnGoing)
+    {
+      ProcessOneEvent(i_event);
+      if(eventLoopOnGoing)
+      {
+        TerminateOneEvent();
+        if(runAborted)
+        { eventLoopOnGoing = false; }
+      }
+    }
+     
+    TerminateEventLoop();
 }
 
 SimpleWorkerRunManager* SimpleWorkerRunManager::GetNewInstanceForThread()

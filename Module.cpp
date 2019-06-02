@@ -11,7 +11,7 @@ void Module::init(){
 bool Module::run(int e)
 {
   (void)e;
-    run_manager_->Run(1);
+    run_manager_->Run(e, 1);
     return true;
 }
 
