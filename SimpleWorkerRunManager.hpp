@@ -8,8 +8,7 @@ class SimpleWorkerRunManager : public G4WorkerRunManager {
 public:
     virtual ~SimpleWorkerRunManager();
 
-    // TODO: override if needed
-    //virtual void DoEventLoop(G4int n_event,const char* macroFile=0,G4int n_select=-1);
+    virtual void BeamOn(G4int n_event,const char* macroFile=0,G4int n_select=-1) override;
 
     static SimpleWorkerRunManager* GetNewInstanceForThread();
 

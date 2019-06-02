@@ -42,9 +42,37 @@ SimpleWorkerRunManager::~SimpleWorkerRunManager()
     //===============================
     //Step-7: Cleanup split classes
     //===============================
+    // TODO: crashes! is it needed anyways?
     //G4WorkerThread::DestroyGeometryAndPhysicsVector();
 }
 
+void SimpleWorkerRunManager::BeamOn(G4int n_event,const char* macroFile,G4int n_select)
+{
+    G4MTRunManager* mrm = G4MTRunManager::GetMasterRunManager();
+
+    // G4Comment: The following code deals with changing materials between runs
+    // While we don't really change materials between runs, but this is here
+    // for completeness.
+    static G4ThreadLocal G4bool skipInitialization = true;
+    if(skipInitialization)
+    {
+        // G4Comment: re-initialization is not necessary for the first run
+        skipInitialization = false;
+    }
+    else
+    {
+        G4WorkerThread::UpdateGeometryAndPhysicsVectorFromMaster();
+    }
+
+    // G4Comment: Execute UI commands stored in the master UI manager
+    std::vector<G4String> cmds = mrm->GetCommandStack();
+    G4UImanager* uimgr = G4UImanager::GetUIpointer(); //TLS instance
+    std::vector<G4String>::const_iterator it = cmds.begin();
+    for(;it!=cmds.end();it++)
+    { uimgr->ApplyCommand(*it); }
+
+    G4RunManager::BeamOn(n_event, macroFile, n_select);
+}
 
 G4Event* SimpleWorkerRunManager::GenerateEvent(G4int i_event)
 {
