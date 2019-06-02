@@ -7,6 +7,7 @@
 #include <G4RunManager.hh>
 #include <G4StepLimiterPhysics.hh>
 #include <G4PhysListFactory.hh>
+#include <G4UImanager.hh>
 
 int main() {
     // Create the G4 run manager
@@ -30,8 +31,19 @@ int main() {
     // Initialize the full run manager to ensure correct state flags
     run_manager_g4_->Initialize();
 
+    G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
+    #define G4_NUM_SEEDS 10
+    std::string seed_command = "/random/setSeeds ";
+    for(int i = 0; i < G4_NUM_SEEDS; ++i) {
+        seed_command += std::to_string(i);
+        if(i != G4_NUM_SEEDS - 1) {
+            seed_command += " ";
+        }
+    }
+    ui_g4->ApplyCommand(seed_command);
+
     // Run our own event loop:
-    for(int i = 0; i < 100000; i++) {
+    for(int i = 0; i < 5; i++) {
         run_manager_g4_->BeamOn(1);
     }
 

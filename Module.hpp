@@ -9,6 +9,8 @@ class Module {
         bool run(int evt_nr);
 
         void finialize();
+
+        void cleanup();
     private:
       SimpleMasterRunManager* run_manager_;
 };

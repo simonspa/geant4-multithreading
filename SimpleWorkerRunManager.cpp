@@ -18,40 +18,56 @@
 #include <G4UserWorkerInitialization.hh>
 #include <G4VUserActionInitialization.hh>
 
-//Equivalent to G4MTRunManagerKernel::StartThread
 #include <atomic>
 
-std::atomic<int> counter;
+static std::atomic<int> counter;
 
 SimpleWorkerRunManager::SimpleWorkerRunManager() :
     G4WorkerRunManager()
-{}
+{
+}
 
 SimpleWorkerRunManager::~SimpleWorkerRunManager()
-{G4cout << "SimpleWorker DTOR!" << G4endl;}
+{
+    G4cout << "SimpleWorker DTOR!" << G4endl;
+
+    G4MTRunManager* masterRM = G4MTRunManager::GetMasterRunManager();
+
+    //===============================
+    //Step-6: Terminate worker thread
+    //===============================
+    if(masterRM->GetUserWorkerInitialization())
+    { masterRM->GetUserWorkerInitialization()->WorkerStop(); }
+
+    //===============================
+    //Step-7: Cleanup split classes
+    //===============================
+    //G4WorkerThread::DestroyGeometryAndPhysicsVector();
+}
 
 
 G4Event* SimpleWorkerRunManager::GenerateEvent(G4int i_event)
 {
     
-  if(!userPrimaryGeneratorAction)
-  {
-    G4Exception("G4RunManager::GenerateEvent()", "Run0032", FatalException,
+    if(!userPrimaryGeneratorAction)
+    {
+        G4Exception("G4RunManager::GenerateEvent()", "Run0032", FatalException,
                 "G4VUserPrimaryGeneratorAction is not defined!");
-    return 0;
-  }
+        return 0;
+    }
 
     G4Event* anEvent = nullptr;
+    long s1, s2, s3;
+    s1 = s2 = s3 = 0;
 
     if( numberOfEventProcessed < numberOfEventToBeProcessed && !runAborted ) {
         anEvent  = new G4Event(numberOfEventProcessed);
-
-      long s1 = 0;
-      long s2 = 0;
-      long s3 = 0;
-
-      eventLoopOnGoing = G4MTRunManager::GetMasterRunManager()
+        
+        // must ask master to seed the event to ensure event reproducability.
+        eventLoopOnGoing = G4MTRunManager::GetMasterRunManager()
                        ->SetUpAnEvent(anEvent,s1,s2,s3,true);
+
+        // seed RNG for this event run
         long seeds[3] = { s1, s2, 0 };
         G4Random::setTheSeeds(seeds,-1);
         // runIsSeeded = true;
@@ -60,97 +76,52 @@ G4Event* SimpleWorkerRunManager::GenerateEvent(G4int i_event)
             G4cout << "--> Event " << anEvent->GetEventID() << " starts";
         //  { G4cout << " with initial seeds (" << s1 << "," << s2 << ")"; }
         //  G4cout << "." << G4endl;
+
         userPrimaryGeneratorAction->GeneratePrimaries(anEvent);
     } else {
+        // This flag must be set so the event loop exits if no more events
+        // to be processed
         eventLoopOnGoing = false;
     }
-
-
 
   return anEvent;
 }
 
-void SimpleWorkerRunManager::StartWorker()
+SimpleWorkerRunManager* SimpleWorkerRunManager::GetNewInstanceForThread()
 {
-  // tasks run "somewhere"; but there is no control over where.
-  // This somewhere is a thread, created, controlled and 'switched'
-  // to our task by the TBB runtime system.
-  // 
-  // The "pedantic" way to proceed is: recreate the "context"
-  // from scratch every time (context=local run manager, 
-  // geometry, etc)
-  // This would be a clear waste of resources: there is no 
-  // need to initialize multiple times, when the same thread 
-  // is used several times, ie for several tasks.
-
-  // In the current version to avoid this we initialize only
-  //   i) the first time we run on each thread, and
-  //  ii) at the start of a new run on each thread (reinitialization).
-  // We are confident that this works because TBB co-works with TLS.
-  // In addition this ensures that minimal changes needed to G4 code base.
-  //
-  // Note 1: that this "thread" is responsible for 1 or more TBB task, 
-  //         e.g. at least one event.
-  // Note 2: In this first example, we do not care about memory usage:
-  //         The resources required depend only on the total number of 
-  //         threads used for at least one event during the simulation.
-  // Note 3: It is possible to do better - this is left for another example.
-  //         Here is a sketch how:
-  //         If there is a set maximum <N> threads which will be doing 
-  //         simulation at any point, and that this is smaller than the 
-  //         number of TBB tasks which can run simulataneously. 
-  //         What would need to be done is to "acquire" a resource (workspace) 
-  //         which holds all the memory required for a running task/thread,
-  //         and release it at the end of the task to be re-used by other tasks
-  //         possibly on different threads. This is demonstrated in another 
-  //         example.
-
-  
-  //Is this task running for the first time?
-  //How to re-initialize between runs????
-  //if (! localRM ) {
-    //It's a new thread, basically repeat what is being done in 
-    //G4MTRunManagerKernel::StarThread with an 
-    //important difference, do not process data or wait for master to 
-    //communicate what to do, it will
-    //not happen!
+    SimpleWorkerRunManager* localRM = nullptr;
     G4MTRunManager* masterRM = G4MTRunManager::GetMasterRunManager();
+
     //============================
     //Step-0: Thread ID
     //============================
     //Initliazie per-thread stream-output
     //The following line is needed before we actually do I/O initialization
     //because the constructor of UI manager resets the I/O destination.
-      G4int thisId = counter.fetch_add(1);
-      G4Threading::G4SetThreadId( thisId );
-      G4UImanager::GetUIpointer()->SetUpForAThread( thisId );
-  
+    G4int thisId = counter.fetch_add(1);
+    G4Threading::G4SetThreadId( thisId );
+    G4UImanager::GetUIpointer()->SetUpForAThread( thisId );
+
     //============================
     //Step-1: Random number engine
     //============================
     //RNG Engine needs to be initialized by "cloning" the master one.
-    const CLHEP::HepRandomEngine* masterEngine =
-          masterRM->getMasterRandomEngine();
+    const CLHEP::HepRandomEngine* masterEngine = masterRM->getMasterRandomEngine();
     masterRM->GetUserWorkerThreadInitialization()->SetupRNGEngine(masterEngine);
-  
+
     //============================
     //Step-2: Initialize worker thread
     //============================
     if(masterRM->GetUserWorkerInitialization())
-      masterRM->GetUserWorkerInitialization()->WorkerInitialize();
+    masterRM->GetUserWorkerInitialization()->WorkerInitialize();
     if(masterRM->GetUserActionInitialization()) {
         G4VSteppingVerbose* sv =
-        masterRM->GetUserActionInitialization()->InitializeSteppingVerbose();
+            masterRM->GetUserActionInitialization()->InitializeSteppingVerbose();
         if (sv) G4VSteppingVerbose::SetInstance(sv);
     }
     //Now initialize worker part of shared objects (geometry/physics)
     G4WorkerThread::BuildGeometryAndPhysicsVector();
-    //localRM = new SimpleWorkerRunManager;
-      G4cout<<this<<G4endl;
-    //localRM->SetWorkerThread(wThreadContext);
-//    G4AutoLock wrmm(&workerRMMutex);
-//    G4MTRunManagerKernel::workerRMvector->push_back(localRM); //<<<<?????? ANDREA TBB
-//    wrmm.unlock();
+    localRM = new SimpleWorkerRunManager;
 
     //================================
     //Step-3: Setup worker run manager
@@ -158,81 +129,32 @@ void SimpleWorkerRunManager::StartWorker()
     // Set the detector and physics list to the worker thread. Share with master
     const G4VUserDetectorConstruction* detector = 
         masterRM->GetUserDetectorConstruction();
-    this->G4RunManager::SetUserInitialization(
+
+    localRM->G4RunManager::SetUserInitialization(
         const_cast<G4VUserDetectorConstruction*>(detector));
+
     const G4VUserPhysicsList* physicslist = masterRM->GetUserPhysicsList();
-    this->SetUserInitialization(const_cast<G4VUserPhysicsList*>(physicslist));
-    
+    localRM->SetUserInitialization(const_cast<G4VUserPhysicsList*>(physicslist));
+
     //================================
     //Step-4: Initialize worker run manager
     //================================
     if(masterRM->GetUserActionInitialization())
-      { masterRM->GetNonConstUserActionInitialization()->Build(); }
+    { masterRM->GetNonConstUserActionInitialization()->Build(); }
     if(masterRM->GetUserWorkerInitialization())
-      { masterRM->GetUserWorkerInitialization()->WorkerStart(); }
-    this->Initialize();
-    
-    //Problem at this point is if there is more than one run...
+    { masterRM->GetUserWorkerInitialization()->WorkerStart(); }
+
+    localRM->Initialize();
+
     // Execute UI commands stored in the masther UI manager
     std::vector<G4String> cmds = masterRM->GetCommandStack();
     G4UImanager* uimgr = G4UImanager::GetUIpointer(); //TLS instance
     std::vector<G4String>::const_iterator it = cmds.begin();
     for(;it!=cmds.end();it++)
-    { uimgr->ApplyCommand(*it); }
-    //Start this run
-    // G4String macroFile = masterRM->GetSelectMacro();
-    // G4int numSelect = masterRM->GetNumberOfSelectEvents();
-    // if ( macroFile == "" || macroFile == " " )
-    // {
-    //     localRM->BeamOn(m_nEvents,0,numSelect);
-    // }
-    // else
-    // {
-    //     localRM->BeamOn(m_nEvents,macroFile,numSelect);
-    // }
-    //======= NEW TBB SPECIFIC ===========
-    //Step-5: Initialize and start run
-    //====================================
-    // bla-bla-bla-bla
-    // This is basically BeamOn 
-    /*m_beamOnCondition = localRM->ConfirmBeamOnCondition();
-    if (m_beamOnCondition) {
-      localRM->SetNumberOfEventsToBeProcessed( m_nEvents );
-      localRM->ConstructScoringWorlds(); 
-      localRM->RunInitialization();
-      //Register this G4Run in output
-      //Note: the idea is that we are going to accumulate everything in 
-      //G4Run or derived class. We let the kernel know this is the object
-      //where the output is accumulated for the tbb::tasks that run on 
-      //this thread.
-      //if ( m_output ) {}
-    }*/
-  //}
-  //if ( m_beamOnCondition ) {
-  //  localRM->DoEventLoop( m_nEvents );
-  //  //localRM->RunTermination(); //<<<< How to call this??? ANDREA TBB
-  //}
+    { 
+        G4cout << *it << G4endl;
+        uimgr->ApplyCommand(*it);
+    }
 
-  //Cannot be done here since thread can be re-used by other task
-  //===============================
-  //Step-6: Terminate worker thread
-  //===============================
-  // if(masterRM->GetUserWorkerInitialization())
-  // { masterRM->GetUserWorkerInitialization()->WorkerStop(); }
-
-  // wrmm.lock();
-// std::vector<G4WorkerRunManager*>::iterator itrWrm = workerRMvector->begin();
-  // for(;itrWrm!=workerRMvector->end();itrWrm++)
-  // {
-  //   if((*itrWrm)==wrm)
-  //   {
-  //     workerRMvector->erase(itrWrm);
-  //     break;
-  //   }
-  // }
-  // wrmm.unlock();
-    
-  // wThreadContext->DestroyGeometryAndPhysicsVector();
-  // wThreadContext = 0;
-
+    return localRM;
 }

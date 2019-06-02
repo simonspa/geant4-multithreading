@@ -1,6 +1,5 @@
 #include "Module.hpp"
 #include "SimpleMasterRunManager.hpp"
-#include "SimpleWorkerRunManager.hpp"
 
 Module::Module(SimpleMasterRunManager* runmanager)
 : run_manager_(runmanager)
@@ -11,18 +10,14 @@ void Module::init(){
 }
 bool Module::run(int e)
 {
-  static thread_local std::unique_ptr<SimpleWorkerRunManager> worker_run_manager_;
-    //run_manager_->BeamOn(1);
-
-        if (!worker_run_manager_) {
-        worker_run_manager_ = std::make_unique<SimpleWorkerRunManager>();
-        worker_run_manager_->StartWorker();
-    }
-
-    worker_run_manager_->BeamOn(1);
-  return true;
+    run_manager_->Run(1);
+    return true;
 }
 
 void Module::finialize() {
-  run_manager_->RunTermination();
+    run_manager_->RunTermination();
+}
+void Module::cleanup()
+{
+  run_manager_->CleanUpWorker();
 }

@@ -13,8 +13,12 @@ public:
 
     void InitializeForCustomThreads(G4int n_event) {
         // Hacky ways of coding...
-        G4MTRunManager::InitializeEventLoop(n_event, nullptr, 0);
+        G4MTRunManager::InitializeEventLoop(nSeedsMax, nullptr, 0);
     }
+
+    void Run(G4int n_event);
+
+    void CleanUpWorker();
 
 
 protected:
@@ -25,6 +29,11 @@ protected:
         (void)reseedRequired;
         return 0;
     }
+
+
+    virtual void WaitForEndEventLoopWorkers() override {}
+
+    
     virtual void RequestWorkersProcessCommandsStack() override {}
     virtual void ThisWorkerProcessCommandsStackDone() override {}
     virtual void CreateAndStartWorkers() override {
@@ -42,10 +51,6 @@ protected:
         // Nothing to do here...
     }
 
-    virtual void WaitForEndEventLoopWorkers() override {
-        // Master used to wait here for workers to finish
-        // Nothing to do here...
-    }
 
     virtual void ThisWorkerReady() override {
         // Workers used to wait here to synchronize with Master
@@ -67,4 +72,7 @@ protected:
         // Issue a new command to workers.
         // Nothing to do here...
     }
+
+private:
+    static G4ThreadLocal SimpleWorkerRunManager* worker_run_manager_; 
 };

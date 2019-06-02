@@ -122,6 +122,11 @@ private:
                     func();
                 }
             }
+
+            // Cleanup all thread local stuff
+            if (pool_->thread_cleanup_func_) {
+                pool_->thread_cleanup_func_();
+            }
         }
     };
 
@@ -130,10 +135,11 @@ private:
     std::vector<std::thread> threads_;
     std::mutex conditional_mutex_;
     std::condition_variable conditional_lock_;
+    std::function<void()> thread_cleanup_func_;
 
 public:
-    ThreadPool(const unsigned int n_threads)
-        : shutdown_(false), threads_(std::vector<std::thread>(n_threads)) {
+    ThreadPool(const unsigned int n_threads, std::function<void()> thread_cleanup_func)
+        : shutdown_(false), threads_(std::vector<std::thread>(n_threads)), thread_cleanup_func_(thread_cleanup_func) {
         for(auto& thread : threads_) {
             thread = std::thread(ThreadWorker(this));
         }
