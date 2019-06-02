@@ -9,9 +9,6 @@
 #include "simulation/generator.hpp"
 #include "tools/ThreadPool.hpp"
 
-// #include "MyRunManager.hpp"
-// #include "MyWorkerRunManager.hpp"
-
 #include <G4StepLimiterPhysics.hh>
 #include <G4PhysListFactory.hh>
 #include <G4UserWorkerInitialization.hh>
