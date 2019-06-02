@@ -12,7 +12,7 @@ public:
 
 
     void InitializeForCustomThreads(G4int n_event) {
-        // Hacky ways of coding...
+        (void) n_event;
         G4MTRunManager::InitializeEventLoop(nSeedsMax, nullptr, 0);
     }
 

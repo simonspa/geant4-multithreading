@@ -10,6 +10,7 @@ void Module::init(){
 }
 bool Module::run(int e)
 {
+  (void)e;
     run_manager_->Run(1);
     return true;
 }

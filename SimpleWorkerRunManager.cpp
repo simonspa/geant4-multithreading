@@ -31,13 +31,14 @@ SimpleWorkerRunManager::~SimpleWorkerRunManager()
 {
     G4cout << "SimpleWorker DTOR!" << G4endl;
 
-    G4MTRunManager* masterRM = G4MTRunManager::GetMasterRunManager();
+    G4MTRunManager* master_run_manager = G4MTRunManager::GetMasterRunManager();
 
     //===============================
     //Step-6: Terminate worker thread
     //===============================
-    if(masterRM->GetUserWorkerInitialization())
-    { masterRM->GetUserWorkerInitialization()->WorkerStop(); }
+    if(master_run_manager->GetUserWorkerInitialization()) { 
+        master_run_manager->GetUserWorkerInitialization()->WorkerStop();
+    }
 
     //===============================
     //Step-7: Cleanup split classes
@@ -76,7 +77,7 @@ void SimpleWorkerRunManager::BeamOn(G4int n_event,const char* macroFile,G4int n_
 
 G4Event* SimpleWorkerRunManager::GenerateEvent(G4int i_event)
 {
-    
+    (void)i_event;
     if(!userPrimaryGeneratorAction)
     {
         G4Exception("G4RunManager::GenerateEvent()", "Run0032", FatalException,
@@ -117,8 +118,8 @@ G4Event* SimpleWorkerRunManager::GenerateEvent(G4int i_event)
 
 SimpleWorkerRunManager* SimpleWorkerRunManager::GetNewInstanceForThread()
 {
-    SimpleWorkerRunManager* localRM = nullptr;
-    G4MTRunManager* masterRM = G4MTRunManager::GetMasterRunManager();
+    SimpleWorkerRunManager* thread_run_manager = nullptr;
+    G4MTRunManager* master_run_manager = G4MTRunManager::GetMasterRunManager();
 
     //============================
     //Step-0: Thread ID
@@ -134,48 +135,48 @@ SimpleWorkerRunManager* SimpleWorkerRunManager::GetNewInstanceForThread()
     //Step-1: Random number engine
     //============================
     //RNG Engine needs to be initialized by "cloning" the master one.
-    const CLHEP::HepRandomEngine* masterEngine = masterRM->getMasterRandomEngine();
-    masterRM->GetUserWorkerThreadInitialization()->SetupRNGEngine(masterEngine);
+    const CLHEP::HepRandomEngine* masterEngine = master_run_manager->getMasterRandomEngine();
+    master_run_manager->GetUserWorkerThreadInitialization()->SetupRNGEngine(masterEngine);
 
     //============================
     //Step-2: Initialize worker thread
     //============================
-    if(masterRM->GetUserWorkerInitialization())
-    masterRM->GetUserWorkerInitialization()->WorkerInitialize();
-    if(masterRM->GetUserActionInitialization()) {
+    if(master_run_manager->GetUserWorkerInitialization())
+    master_run_manager->GetUserWorkerInitialization()->WorkerInitialize();
+    if(master_run_manager->GetUserActionInitialization()) {
         G4VSteppingVerbose* sv =
-            masterRM->GetUserActionInitialization()->InitializeSteppingVerbose();
+            master_run_manager->GetUserActionInitialization()->InitializeSteppingVerbose();
         if (sv) G4VSteppingVerbose::SetInstance(sv);
     }
     //Now initialize worker part of shared objects (geometry/physics)
     G4WorkerThread::BuildGeometryAndPhysicsVector();
-    localRM = new SimpleWorkerRunManager;
+    thread_run_manager = new SimpleWorkerRunManager;
 
     //================================
     //Step-3: Setup worker run manager
     //================================
     // Set the detector and physics list to the worker thread. Share with master
     const G4VUserDetectorConstruction* detector = 
-        masterRM->GetUserDetectorConstruction();
+        master_run_manager->GetUserDetectorConstruction();
 
-    localRM->G4RunManager::SetUserInitialization(
+    thread_run_manager->G4RunManager::SetUserInitialization(
         const_cast<G4VUserDetectorConstruction*>(detector));
 
-    const G4VUserPhysicsList* physicslist = masterRM->GetUserPhysicsList();
-    localRM->SetUserInitialization(const_cast<G4VUserPhysicsList*>(physicslist));
+    const G4VUserPhysicsList* physicslist = master_run_manager->GetUserPhysicsList();
+    thread_run_manager->SetUserInitialization(const_cast<G4VUserPhysicsList*>(physicslist));
 
     //================================
     //Step-4: Initialize worker run manager
     //================================
-    if(masterRM->GetUserActionInitialization())
-    { masterRM->GetNonConstUserActionInitialization()->Build(); }
-    if(masterRM->GetUserWorkerInitialization())
-    { masterRM->GetUserWorkerInitialization()->WorkerStart(); }
+    if(master_run_manager->GetUserActionInitialization())
+    { master_run_manager->GetNonConstUserActionInitialization()->Build(); }
+    if(master_run_manager->GetUserWorkerInitialization())
+    { master_run_manager->GetUserWorkerInitialization()->WorkerStart(); }
 
-    localRM->Initialize();
+    thread_run_manager->Initialize();
 
     // Execute UI commands stored in the masther UI manager
-    std::vector<G4String> cmds = masterRM->GetCommandStack();
+    std::vector<G4String> cmds = master_run_manager->GetCommandStack();
     G4UImanager* uimgr = G4UImanager::GetUIpointer(); //TLS instance
     std::vector<G4String>::const_iterator it = cmds.begin();
     for(;it!=cmds.end();it++)
@@ -184,5 +185,5 @@ SimpleWorkerRunManager* SimpleWorkerRunManager::GetNewInstanceForThread()
         uimgr->ApplyCommand(*it);
     }
 
-    return localRM;
+    return thread_run_manager;
 }
