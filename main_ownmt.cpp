@@ -33,11 +33,7 @@ int main(int argc, char *argv[]) {
     int threads_num = args.size() > 0 ? std::stoi(args[0]) : 1;
     std::cout << "Using " << threads_num << " thread(s).\n";
 
-    //MyRunManager* run_manager_ = new MyRunManager;
     SimpleMasterRunManager* run_manager_ = new SimpleMasterRunManager;
-    // CMSRunManager* run_manager_ = new CMSRunManager;
-    // Set custom thread initialization
-    // run_manager_->SetUserInitialization(new MyThreadInitialization);
 
     // Initialize the geometry:
     auto geometry_construction = new GeometryConstructionG4();
