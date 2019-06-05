@@ -7,7 +7,6 @@ Module::Module(SimpleMasterRunManager* runmanager)
 }
 
 void Module::init(){
-  run_manager_->InitializeForCustomThreads(2);
 }
 
 bool Module::run(int e)
