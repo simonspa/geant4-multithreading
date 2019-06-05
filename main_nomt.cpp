@@ -28,9 +28,6 @@ int main() {
     // Particle source
     run_manager_g4_->SetUserInitialization(new GeneratorActionInitialization());
 
-    // Initialize the full run manager to ensure correct state flags
-    run_manager_g4_->Initialize();
-
     G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
     #define G4_NUM_SEEDS 10
     std::string seed_command = "/random/setSeeds ";
@@ -41,6 +38,9 @@ int main() {
         }
     }
     ui_g4->ApplyCommand(seed_command);
+
+    // Initialize the full run manager to ensure correct state flags
+    run_manager_g4_->Initialize();
 
     // Run our own event loop:
     for(int i = 0; i < 5; i++) {
