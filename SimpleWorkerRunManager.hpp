@@ -13,6 +13,7 @@ public:
 
     virtual void BeamOn(G4int n_event,const char* macroFile=0,G4int n_select=-1) override;
 
+    // Factory method to create and correctly initialize a new worker
     static SimpleWorkerRunManager* GetNewInstanceForThread();
 
 protected:

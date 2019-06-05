@@ -29,8 +29,6 @@ SimpleWorkerRunManager::SimpleWorkerRunManager() :
 
 SimpleWorkerRunManager::~SimpleWorkerRunManager()
 {
-    G4cout << "SimpleWorker DTOR!" << G4endl;
-
     G4MTRunManager* master_run_manager = G4MTRunManager::GetMasterRunManager();
 
     //===============================
@@ -91,11 +89,9 @@ G4Event* SimpleWorkerRunManager::GenerateEvent(G4int i_event)
 
     if( numberOfEventProcessed < numberOfEventToBeProcessed && !runAborted ) {
         anEvent  = new G4Event(numberOfEventProcessed);
-        
-        // must ask master to seed the event to ensure event reproducability.
-        //eventLoopOnGoing = G4MTRunManager::GetMasterRunManager()
-        //               ->SetUpAnEvent(anEvent,s1,s2,s3,true);
 
+        // Seeds are stored in this queue to ensure we can reproduce the results of events
+        // each event will reseed the random number generator
         s1 = seedsQueue.front(); seedsQueue.pop();
         s2 = seedsQueue.front(); seedsQueue.pop();
         if (seedsQueue.size() > 0) {
@@ -106,12 +102,7 @@ G4Event* SimpleWorkerRunManager::GenerateEvent(G4int i_event)
         // seed RNG for this event run
         long seeds[3] = { s1, s2, 0 };
         G4Random::setTheSeeds(seeds,-1);
-        // runIsSeeded = true;
-            
-        //if(printModulo > 0 && anEvent->GetEventID()%printModulo == 0 )
-            G4cout << "--> Event " << anEvent->GetEventID() << " starts";
-        //  { G4cout << " with initial seeds (" << s1 << "," << s2 << ")"; }
-        //  G4cout << "." << G4endl;
+        runIsSeeded = true;
 
         userPrimaryGeneratorAction->GeneratePrimaries(anEvent);
     } else {
