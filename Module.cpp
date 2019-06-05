@@ -5,12 +5,14 @@ Module::Module(SimpleMasterRunManager* runmanager)
 : run_manager_(runmanager)
 {
 }
+
 void Module::init(){
   run_manager_->InitializeForCustomThreads(2);
 }
+
 bool Module::run(int e)
 {
-  (void)e;
+    // Equivalent to BeamOn(1) 
     run_manager_->Run(e, 1);
     return true;
 }
@@ -18,7 +20,8 @@ bool Module::run(int e)
 void Module::finialize() {
     run_manager_->RunTermination();
 }
-void Module::cleanup()
+
+void Module::finializeForThread()
 {
-  run_manager_->CleanUpWorker();
+    run_manager_->CleanUpWorker();
 }

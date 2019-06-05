@@ -1,6 +1,7 @@
 #pragma once
 
 class SimpleMasterRunManager;
+
 class Module {
     public:
         Module(SimpleMasterRunManager* runmanager);
@@ -10,7 +11,10 @@ class Module {
 
         void finialize();
 
-        void cleanup();
+        // must be called by each thread to cleanup thread local data
+        void finializeForThread();
+
     private:
-      SimpleMasterRunManager* run_manager_;
+        // The new G4RunManager
+        SimpleMasterRunManager* run_manager_;
 };
