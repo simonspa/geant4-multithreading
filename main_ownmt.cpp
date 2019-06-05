@@ -48,9 +48,7 @@ int main(int argc, char *argv[]) {
     run_manager_->SetUserInitialization(new GeneratorActionInitialization());
     // run_manager_->SetUserAction(new GeneratorActionG4());
 
-    // Initialize the full run manager to ensure correct state flags
-    run_manager_->Initialize();
-
+    // Set the seeds before calling initialize
     G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
     #define G4_NUM_SEEDS 10
     std::string seed_command = "/random/setSeeds ";
@@ -61,6 +59,9 @@ int main(int argc, char *argv[]) {
         }
     }
     ui_g4->ApplyCommand(seed_command);
+
+    // Initialize the full run manager to ensure correct state flags
+    run_manager_->Initialize();
 
     auto module = std::make_unique<Module>(run_manager_);
     module->init();
