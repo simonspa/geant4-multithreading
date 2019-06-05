@@ -27,7 +27,7 @@ public:
     void CleanUpWorker();
 protected:
     // Original G4MTRunManager API
-    // All
+    // All methods are overriden to do nothing
 
     virtual WorkerActionRequest ThisWorkerWaitForNextAction() override {
         return WorkerActionRequest::UNDEFINED;
