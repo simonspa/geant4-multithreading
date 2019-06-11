@@ -16,11 +16,11 @@ bool Module::run(int e)
     return true;
 }
 
-void Module::finialize() {
-    run_manager_->RunTermination();
-}
-
-void Module::finializeForThread()
+void Module::finializeThread()
 {
     run_manager_->TerminateForThread();
+}
+
+void Module::finialize() {
+    run_manager_->RunTermination();
 }

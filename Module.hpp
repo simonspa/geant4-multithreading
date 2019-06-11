@@ -9,10 +9,10 @@ class Module {
 
         bool run(int evt_nr);
 
-        void finialize();
-
         // must be called by each thread to cleanup thread local data
-        void finializeForThread();
+        void finializeThread();
+
+        void finialize();
 
     private:
         // The new G4RunManager
