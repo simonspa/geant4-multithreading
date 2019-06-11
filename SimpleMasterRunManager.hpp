@@ -24,7 +24,7 @@ public:
 
     // Must be called by each custom thread that ever called the Run method
     // to clean thread local stuff
-    void CleanUpWorker();
+    void TerminateForThread();
 protected:
     // Original G4MTRunManager API
     // All methods are overriden to do nothing

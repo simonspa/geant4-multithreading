@@ -22,9 +22,8 @@ void SimpleMasterRunManager::Initialize()
     G4MTRunManager::InitializeEventLoop(nSeedsMax, nullptr, 0);
 }
 
-void SimpleMasterRunManager::CleanUpWorker()
+void SimpleMasterRunManager::TerminateForThread()
 {
-    //G4cout << "Master Terminating worker " << worker_run_manager_ << G4endl;
     worker_run_manager_->RunTermination();
     delete worker_run_manager_;
     worker_run_manager_ = nullptr;

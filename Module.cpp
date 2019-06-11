@@ -22,5 +22,5 @@ void Module::finialize() {
 
 void Module::finializeForThread()
 {
-    run_manager_->CleanUpWorker();
+    run_manager_->TerminateForThread();
 }
