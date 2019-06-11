@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
     // Start new thread pool and create module object:
     ThreadPool pool(threads_num, [module = module.get()]() {
         // cleanup all thread local stuff
-        module->finializeForThread();
+        module->finializeThread();
     });
 
     // The event loop:
