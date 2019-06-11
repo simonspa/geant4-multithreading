@@ -61,6 +61,8 @@ int main(int argc, char *argv[]) {
     ui_g4->ApplyCommand(seed_command);
 
     // Initialize the full run manager to ensure correct state flags
+    // This call will initialize the manager's event loop and as such enable later calls
+    // for BeamOn on multiple threads
     run_manager_->Initialize();
 
     auto module = std::make_unique<Module>(run_manager_);
