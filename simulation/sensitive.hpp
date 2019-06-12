@@ -1,5 +1,6 @@
 #include <G4VSensitiveDetector.hh>
 #include <G4SDManager.hh>
+#include <thread>
 
 /**
  * @brief Handles the steps of the particles in all sensitive devices
@@ -13,6 +14,8 @@ public:
         // Add the sensor to the internal sensitive detector manager
         G4SDManager* sd_man_g4 = G4SDManager::GetSDMpointer();
         sd_man_g4->AddNewDetector(this);
+
+        std::cerr<< "SensitiveDetectorActionG4" << std::endl;
     };
 
     /**
@@ -33,7 +36,7 @@ public:
         G4ThreeVector mid_pos = (preStepPoint->GetPosition() + postStepPoint->GetPosition()) / 2;
         double mid_time = (preStepPoint->GetGlobalTime() + postStepPoint->GetGlobalTime()) / 2;
 
-        std::cout << "Step. E=" << edep << " PosX=" << mid_pos.x() << " t=" << mid_time << std::endl;
+        std::cerr << std::this_thread::get_id() <<  " Step. E=" << edep << " PosX=" << mid_pos.x() << " t=" << mid_time << std::endl;
         return true;
     };
 };

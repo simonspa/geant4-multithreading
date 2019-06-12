@@ -7,6 +7,7 @@
 #include <G4MTRunManager.hh>
 #include <G4StepLimiterPhysics.hh>
 #include <G4PhysListFactory.hh>
+#include <G4UImanager.hh>
 
 int main(int argc, char *argv[]) {
     // How many threads do we use?
@@ -33,11 +34,22 @@ int main(int argc, char *argv[]) {
     // Particle source
     run_manager_g4_->SetUserInitialization(new GeneratorActionInitialization());
 
+    #define G4_NUM_SEEDS 10
+    std::string seed_command = "/random/setSeeds ";
+    for(int i = 0; i < G4_NUM_SEEDS; ++i) {
+       seed_command += std::to_string(i);
+       if(i != G4_NUM_SEEDS - 1) {
+           seed_command += " ";
+       }
+    }
+    G4UImanager* ui_g4 = G4UImanager::GetUIpointer();
+    ui_g4->ApplyCommand(seed_command);
+
     // Initialize the full run manager to ensure correct state flags
     run_manager_g4_->Initialize();
 
     // Execute the event loop:
-    run_manager_g4_->BeamOn(100000);
+    run_manager_g4_->BeamOn(10);
 
     return 0;
 }
